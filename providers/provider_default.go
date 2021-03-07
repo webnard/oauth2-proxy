@@ -135,7 +135,7 @@ func (p *ProviderData) RefreshSession(_ context.Context, s *sessions.SessionStat
 		return false, nil
 	}
 
-	// Pretend `RefreshSession` occured so `ValidateSession` isn't called
+	// Pretend `RefreshSession` occurred so `ValidateSession` isn't called
 	// on every request after any potential set refresh period elapses.
 	return true, nil
 }
