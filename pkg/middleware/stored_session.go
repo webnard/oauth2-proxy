@@ -140,6 +140,12 @@ func (s *storedSessionLoader) refreshSession(rw http.ResponseWriter, req *http.R
 	}
 
 	// If we refreshed, update the `CreatedAt` time to reset the refresh timer
+	//
+	// HACK:
+	// Providers that don't implement `RefreshSession` use the default
+	// implementation. It always returns `refreshed == true`, so the
+	// `session.CreatedAt` is updated and doesn't trigger `ValidateSession`
+	// every subsequent request.
 	session.CreatedAtNow()
 
 	// Because the session was refreshed, make sure to save it
