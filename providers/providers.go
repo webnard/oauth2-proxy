@@ -6,6 +6,10 @@ import (
 	"github.com/oauth2-proxy/oauth2-proxy/v7/pkg/apis/sessions"
 )
 
+// refreshFunc helps wrapping parent implementations of RefreshSessionIfNeeded
+// calls in child implementations
+type refreshFunc func(context.Context, *sessions.SessionState) (bool, error)
+
 // Provider represents an upstream identity provider implementation
 type Provider interface {
 	Data() *ProviderData
