@@ -132,21 +132,20 @@ func (s *storedSessionLoader) refreshSessionIfNeeded(rw http.ResponseWriter, req
 // and will save the session if it was updated.
 func (s *storedSessionLoader) refreshSession(rw http.ResponseWriter, req *http.Request, session *sessionsapi.SessionState) error {
 	refreshed, err := s.sessionRefresher(req.Context(), session)
-	if err != nil && !errors.Is(err, providers.ErrNotImplemented) {
-		return fmt.Errorf("error refreshing tokens: %v", err)
-	}
-
-	if !refreshed {
-		if errors.Is(err, providers.ErrNotImplemented) {
-			// HACK:
-			// Providers that don't implement `RefreshSession` use the default
-			// implementation which returns `ErrNotImplemented`.
-			// Update `session.CreatedAt` to reset the refresh timer so that
-			// `ValidateSession` isn't triggered every subsequent request and is
-			// only called once during this request.
-			session.CreatedAtNow()
+	// HACK:
+	// Providers that don't implement `RefreshSession` use the default
+	// implementation which returns `ErrNotImplemented`.
+	// Fallthrough & update `session.CreatedAt` to reset the refresh timer so
+	// that `ValidateSession` isn't triggered every subsequent request and is
+	// only called once during this request.
+	if !errors.Is(err, providers.ErrNotImplemented) {
+		if err != nil {
+			return fmt.Errorf("error refreshing tokens: %v", err)
 		}
-		return nil
+		// Session not refreshed, nothing to persist.
+		if !refreshed {
+			return nil
+		}
 	}
 
 	// If we refreshed, update the `CreatedAt` time to reset the refresh timer
